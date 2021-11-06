@@ -1,5 +1,6 @@
 package ys.compose.basicsyscode
 
+import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -111,10 +112,16 @@ private fun Greeting(name: String) {
     }
 }
 
+//@Preview(
+//    showBackground = true,
+//    widthDp = 320,
+//    uiMode = UI_MODE_NIGHT_YES,
+//    name = "DefaultPreviewDark"
+//)
 @Preview(showBackground = true)
 @Composable
 fun DefaultPreview() {
     BasicsYSCodeTheme {
-        MyApp()
+        Greetings()
     }
 }
