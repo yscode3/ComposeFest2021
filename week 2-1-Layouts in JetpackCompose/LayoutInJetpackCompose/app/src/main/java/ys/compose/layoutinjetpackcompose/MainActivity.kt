@@ -59,6 +59,17 @@ fun PhotographerCard(modifier: Modifier = Modifier) {
     }
 }
 
+@Preview
+@Composable
+fun TopAppBarBtn() {
+    TopAppBar(
+        title = {
+            Text(text = "Page title", maxLines = 2)
+        },
+        navigationIcon = {  }
+    )
+}
+
 @Preview(showBackground = true)
 @Composable
 fun PhotographerCardPreview() {
