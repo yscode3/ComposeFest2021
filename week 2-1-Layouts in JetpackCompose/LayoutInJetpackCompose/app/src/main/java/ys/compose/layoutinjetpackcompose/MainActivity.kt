@@ -1,6 +1,7 @@
 package ys.compose.layoutinjetpackcompose
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.*
@@ -11,17 +12,17 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
+import androidx.constraintlayout.compose.ConstraintLayout
 import coil.compose.rememberImagePainter
 import kotlinx.coroutines.launch
 import ys.compose.layoutinjetpackcompose.ui.theme.LayoutInJetpackComposeTheme
@@ -30,14 +31,97 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-//            PhotographerCard()
-            LayoutsYSCode()
+            LayoutInJetpackComposeTheme {
+                Week2_1()
+            }
         }
     }
 }
 
 @Composable
-fun PhotographerCard(modifier: Modifier = Modifier) {
+private fun Week2_1() {
+    var chosenChapter by remember { mutableStateOf(0) }
+//    val backBtn = createRef()
+
+    Column {
+        if (chosenChapter != 0) {
+            Button(onClick = { chosenChapter = 0 }) {
+                Text(text = "Back")
+            }
+        }
+
+        when (chosenChapter) {
+            0 -> {
+                ShowChatpers(onClicked = { idx -> chosenChapter = idx })
+            }
+            1 -> {
+                ShowModifier()
+            }
+            2 -> {
+                ShowMaterialComponents()
+            }
+            3 -> {
+                ShowCreateYourCustomLayout()
+            }
+            4 -> {
+                ShowComplexCustomLayout()
+            }
+            5 -> {
+                ShowLayoutModifiersUnderTheHood()
+            }
+            6 -> {
+                ShowConstraintLayout()
+            }
+            7 -> {
+                ShowIntrinsics()
+            }
+        }
+    }
+}
+
+/**
+ * Show Chapter
+ */
+@Composable
+private fun ShowChatpers(onClicked: (idx: Int) -> Unit) {
+    var chapters = listOf(
+        "Modifiers",
+        "Material Components",
+        "Create your custom layout",
+        "Complex custom layout",
+        "Layout modifiers under the hood",
+        "Constraint Layout",
+        "Intrinsics"
+    )
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        for ((idx, name) in chapters.withIndex()) {
+            Log.d("Week2", "${idx} / ${name}")
+            Button(
+                onClick = { onClicked(idx + 1) },
+                modifier = Modifier.padding(5.dp)
+            ) {
+                Text(text = "#${idx}_${name}")
+            }
+        }
+    }
+}
+
+@Preview
+@Composable
+fun MenuLayoutPreview() {
+    LayoutInJetpackComposeTheme {
+        ShowChatpers(onClicked = {})
+    }
+}
+
+/**
+ * Show Modifier
+ */
+@Composable
+fun ShowModifier(modifier: Modifier = Modifier) {
     Row(
         modifier = modifier
             .padding(4.dp)
@@ -69,7 +153,15 @@ fun PhotographerCard(modifier: Modifier = Modifier) {
 
 @Preview
 @Composable
-fun LayoutsYSCode() {
+fun ShowModifierPreview() {
+    ShowModifier()
+}
+
+/**
+ * Show MaterialComponents
+ */
+@Composable
+fun ShowMaterialComponents() {
     Scaffold(
         topBar = {
             TopAppBar(
@@ -94,27 +186,9 @@ fun LayoutsYSCode() {
 
 @Composable
 fun BodyContents(modifier: Modifier = Modifier) {
-    Column(modifier = modifier) {
-        Text(text = "Hi there!")
-        Text(text = "Thanks for going through the Layouts YSCode")
-//        SimpleList()
-//        Spacer(modifier = Modifier.width(15.dp))
-        ScrollingList()
-    }
-}
-
-@Composable
-fun SimpleList() {
-    val scrollState = rememberScrollState()
-    Column(
-        Modifier
-            .verticalScroll(scrollState)
-            .fillMaxWidth()
-    ) {
-        repeat(100) {
-            ImageListItem(it)
-        }
-    }
+    Text(text = "Hi there!")
+    Text(text = "Thanks for going through the Layouts YSCode")
+    ScrollingList()
 }
 
 @Composable
@@ -134,7 +208,7 @@ fun ScrollingList() {
             }
             Button(onClick = {
                 coroutineScope.launch {
-                    scrollState.animateScrollToItem(listSize-1)
+                    scrollState.animateScrollToItem(listSize - 1)
                 }
             }) {
                 Text(text = "Scroll to the Bottom")
@@ -162,21 +236,114 @@ fun ImageListItem(itemIdx: Int) {
     }
 }
 
-@Preview
+/**
+ * Show CreateYourCustomLayout
+ */
 @Composable
-fun TopAppBarBtn() {
-    TopAppBar(
-        title = {
-            Text(text = "Page title", maxLines = 2)
-        },
-        navigationIcon = { }
-    )
+fun ShowCreateYourCustomLayout() {
+    MyOwnColumn(Modifier.padding(8.dp)) {
+        Text("MyOwnColumn")
+        Text("places items")
+        Text("vertically.")
+        Text("We've done it by hand!")
+    }
+}
+
+@Composable
+fun MyOwnColumn(
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit
+) {
+    Layout(
+        modifier = modifier,
+        content = content
+    ) { measurable, constraints ->
+        val placealbes = measurable.map { measurable ->
+            measurable.measure(constraints)
+        }
+
+        var yPosition = 0
+
+        layout(constraints.maxWidth, constraints.maxHeight) {
+            placealbes.forEach { placeable ->
+                placeable.placeRelative(x = 0, y = yPosition)
+                yPosition += placeable.height
+            }
+        }
+    }
+}
+
+/**
+ * Show ComplexCustomLayout
+ */
+fun ShowComplexCustomLayout() {
+
+}
+
+/**
+ * Show LayoutModifiersUnderTheHood
+ */
+fun ShowLayoutModifiersUnderTheHood() {
+
+}
+
+/**
+ * Show ConstraintLayout
+ */
+@Composable
+fun ShowConstraintLayout() {
+//    ConstraintLayout {
+//        val (btn, text) = createRefs()
+//
+//        Button(onClick = { /*TODO*/ },
+//            modifier = Modifier.constrainAs(btn) {
+//                top.linkTo(parent.top, margin = 16.dp)
+//            }
+//        ) {
+//            Text(text = "Button")
+//        }
+//
+//        Text(text = "Text", modifier = Modifier.constrainAs(text) {
+//            top.linkTo(btn.bottom, margin = 16.dp)
+//            centerHorizontallyTo(parent)
+//        })
+//    }
+
+    ConstraintLayout {
+        val (btn1, btn2, text) = createRefs()
+
+        Button(onClick = { /*TODO*/ },
+        modifier = Modifier.constrainAs(btn1) {
+            top.linkTo(parent.top, margin = 16.dp)
+        }) {
+            Text(text = "Button 1")
+        }
+
+        Text(text = "Text", modifier = Modifier.constrainAs(btn1) {
+            top.linkTo(btn1.bottom, margin = 16.dp)
+            centerAround(btn1.end)
+        })
+
+        val barrier = createEndBarrier(btn1, text)
+        Button(onClick = { /*TODO*/ },
+        modifier = Modifier.constrainAs(btn2) {
+            top.linkTo(parent.top, margin = 16.dp)
+            start.linkTo(barrier)
+        }) {
+            Text(text = "Button 2")
+        }
+    }
 }
 
 @Preview(showBackground = true)
 @Composable
-fun PhotographerCardPreview() {
-    LayoutInJetpackComposeTheme {
-        PhotographerCard()
-    }
+fun ShowConstraintLayoutPreview() {
+    ShowConstraintLayout()
+}
+
+/**
+ * Show Intrinsics
+ */
+fun ShowIntrinsics() {
+
 }
