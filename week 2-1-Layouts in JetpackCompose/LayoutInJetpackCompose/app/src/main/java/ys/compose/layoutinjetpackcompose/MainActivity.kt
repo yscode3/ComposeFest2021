@@ -1,5 +1,6 @@
 package ys.compose.layoutinjetpackcompose
 
+import android.graphics.Paint
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -17,12 +18,18 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.constraintlayout.compose.ConstraintSet
+import androidx.constraintlayout.compose.Dimension
+import androidx.constraintlayout.solver.state.State
 import coil.compose.rememberImagePainter
 import kotlinx.coroutines.launch
 import ys.compose.layoutinjetpackcompose.ui.theme.LayoutInJetpackComposeTheme
@@ -45,7 +52,10 @@ private fun Week2_1() {
 
     Column {
         if (chosenChapter != 0) {
-            Button(onClick = { chosenChapter = 0 }) {
+            Button(
+                onClick = { chosenChapter = 0 },
+                modifier = Modifier.padding(10.dp)
+            ) {
                 Text(text = "Back")
             }
         }
@@ -109,7 +119,7 @@ private fun ShowChatpers(onClicked: (idx: Int) -> Unit) {
     }
 }
 
-@Preview
+//@Preview
 @Composable
 fun MenuLayoutPreview() {
     LayoutInJetpackComposeTheme {
@@ -151,7 +161,7 @@ fun ShowModifier(modifier: Modifier = Modifier) {
     }
 }
 
-@Preview
+//@Preview
 @Composable
 fun ShowModifierPreview() {
     ShowModifier()
@@ -276,6 +286,8 @@ fun MyOwnColumn(
 /**
  * Show ComplexCustomLayout
  */
+
+@Composable
 fun ShowComplexCustomLayout() {
 
 }
@@ -283,6 +295,7 @@ fun ShowComplexCustomLayout() {
 /**
  * Show LayoutModifiersUnderTheHood
  */
+@Composable
 fun ShowLayoutModifiersUnderTheHood() {
 
 }
@@ -292,50 +305,116 @@ fun ShowLayoutModifiersUnderTheHood() {
  */
 @Composable
 fun ShowConstraintLayout() {
-//    ConstraintLayout {
-//        val (btn, text) = createRefs()
-//
-//        Button(onClick = { /*TODO*/ },
-//            modifier = Modifier.constrainAs(btn) {
-//                top.linkTo(parent.top, margin = 16.dp)
-//            }
-//        ) {
-//            Text(text = "Button")
-//        }
-//
-//        Text(text = "Text", modifier = Modifier.constrainAs(text) {
-//            top.linkTo(btn.bottom, margin = 16.dp)
-//            centerHorizontallyTo(parent)
-//        })
-//    }
+    ConstraintLayout {
+        val (btn, text) = createRefs()
+
+        Button(onClick = { /*TODO*/ },
+            modifier = Modifier.constrainAs(btn) {
+                top.linkTo(parent.top, margin = 16.dp)
+            }
+        ) {
+            Text(text = "Button")
+        }
+
+        Text(text = "Text", modifier = Modifier.constrainAs(text) {
+            top.linkTo(btn.bottom, margin = 16.dp)
+            centerHorizontallyTo(parent)
+        })
+    }
 
     ConstraintLayout {
         val (btn1, btn2, text) = createRefs()
 
-        Button(onClick = { /*TODO*/ },
-        modifier = Modifier.constrainAs(btn1) {
-            top.linkTo(parent.top, margin = 16.dp)
-        }) {
+        Button(
+            onClick = { /*TODO*/ },
+            modifier = Modifier.constrainAs(btn1) {
+                top.linkTo(parent.top, margin = 16.dp)
+            }
+        ) {
             Text(text = "Button 1")
         }
 
-        Text(text = "Text", modifier = Modifier.constrainAs(btn1) {
-            top.linkTo(btn1.bottom, margin = 16.dp)
-            centerAround(btn1.end)
-        })
+        Text(
+            text = "Text",
+            modifier = Modifier.constrainAs(text) {
+                top.linkTo(btn1.bottom, margin = 16.dp)
+                centerAround(btn1.end)
+            })
 
         val barrier = createEndBarrier(btn1, text)
-        Button(onClick = { /*TODO*/ },
-        modifier = Modifier.constrainAs(btn2) {
-            top.linkTo(parent.top, margin = 16.dp)
-            start.linkTo(barrier)
-        }) {
+
+        Button(
+            onClick = { /*TODO*/ },
+            modifier = Modifier.constrainAs(btn2) {
+                top.linkTo(parent.top, margin = 16.dp)
+                start.linkTo(barrier)
+            }
+        ) {
             Text(text = "Button 2")
+        }
+    }
+
+    ConstraintLayout {
+        val text = createRef()
+        val guideLine = createGuidelineFromStart(fraction = 0.5f)
+        Text(
+            text = "This is very very very very long text",
+            modifier = Modifier.constrainAs(text) {
+                linkTo(start = guideLine, end = parent.end)
+            }
+        )
+    }
+
+    ConstraintLayout {
+        val text = createRef()
+        val guideLine = createGuidelineFromStart(fraction = 0.5f)
+        Text(text = "This is very very very very very very very very very long text",
+            modifier = Modifier.constrainAs(text) {
+                linkTo(guideLine, parent.end)
+                width = Dimension.preferredWrapContent
+            })
+    }
+
+    DecoupledConstraintLayout()
+}
+
+@Composable
+fun DecoupledConstraintLayout() {
+    BoxWithConstraints {
+        val constraints = if (maxWidth < maxHeight) {
+            decoupledConstraints(margin = 16.dp)
+        } else {
+            decoupledConstraints(margin = 32.dp)
+        }
+
+        ConstraintLayout(constraints) {
+            Button(
+                onClick = { /*TODO*/ },
+                modifier = Modifier.layoutId("button")
+            ) {
+                Text(text = "Button")
+            }
+
+            Text(text = "Text", modifier = Modifier.layoutId("text"))
         }
     }
 }
 
-@Preview(showBackground = true)
+private fun decoupledConstraints(margin: Dp): ConstraintSet {
+    return ConstraintSet {
+        val btn = createRefFor("button")
+        val text = createRefFor("text")
+
+        constrain(btn) {
+            top.linkTo(parent.top, margin = margin)
+        }
+        constrain(text) {
+            top.linkTo(btn.bottom, margin = margin)
+        }
+    }
+}
+
+//@Preview(showBackground = true)
 @Composable
 fun ShowConstraintLayoutPreview() {
     ShowConstraintLayout()
@@ -344,6 +423,33 @@ fun ShowConstraintLayoutPreview() {
 /**
  * Show Intrinsics
  */
+@Composable
 fun ShowIntrinsics() {
+    LayoutInJetpackComposeTheme {
+        Surface {
+            TwoTexts(text1 = "Hi", text2 = "There")
+        }
+    }
+}
 
+@Composable
+fun TwoTexts(modifier: Modifier = Modifier, text1: String, text2: String) {
+    Row(modifier = modifier) {
+        Text(
+            text = text1,
+            modifier = Modifier
+                .weight(1f)
+                .padding(start = 4.dp)
+                .wrapContentWidth(Alignment.Start)
+                .align(Alignment.CenterVertically)
+        )
+        Divider(color = Color.Black, modifier = Modifier.fillMaxHeight().width(1.dp))
+        Text(
+            text = text2,
+            modifier = Modifier
+                .weight(1f)
+                .padding(end = 4.dp)
+                .wrapContentWidth(Alignment.End)
+        )
+    }
 }
