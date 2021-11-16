@@ -41,23 +41,27 @@ fun TodoInputTextField(text: String, onTextChange: (String) -> Unit, modifier: M
 
 @Composable
 fun TodoItemEntryInput(onItemComplete: (TodoItem) -> Unit) {
-    val (text, setText) = remember { mutableStateOf("") }
-    val (icon, setIcon) = remember { mutableStateOf(TodoIcon.Default) }
+    val (text, onTextChange) = remember { mutableStateOf("") }
+    val (icon, onIconChnage) = remember { mutableStateOf(TodoIcon.Default) }
     val iconsVisible = text.isNotBlank()
     val submit = {
-        onItemComplete(TodoItem(text, icon))
-        setIcon(TodoIcon.Default)
-        setText("")
+        if (text.isNotBlank()) {
+            onItemComplete(TodoItem(text, icon))
+            onTextChange("")
+            onIconChnage(TodoIcon.Default)
+        }
     }
 
     TodoItemInput(
         text = text,
-        onTextChange = setText,
+        onTextChange = onTextChange,
         submit = submit,
         iconsVisible = iconsVisible,
         icon = icon,
-        onIconChange = setIcon
-    )
+        onIconChange = onIconChnage
+    ) {
+        TodoEditButton(onClick = submit, text = "Add", enabled = text.isNotBlank())
+    }
 }
 
 @Composable
@@ -67,7 +71,8 @@ fun TodoItemInput(
     submit: () -> Unit,
     iconsVisible: Boolean,
     icon: TodoIcon,
-    onIconChange: (TodoIcon) -> Unit
+    onIconChange: (TodoIcon) -> Unit,
+    btnSlot: @Composable () -> Unit
 ) {
     Column {
         Row(
@@ -83,6 +88,12 @@ fun TodoItemInput(
                     .padding(end = 8.dp),
                 onImeAction = submit
             )
+
+            Spacer(modifier = Modifier.width(8.dp))
+            Box(modifier = Modifier.align(Alignment.CenterVertically)) {
+                btnSlot()
+            }
+
             TodoEditButton(
                 onClick = submit,
                 text = "Add",
@@ -115,7 +126,27 @@ fun TodoItemInLineEditor(
     submit = onEditDone,
     iconsVisible = true,
     icon = item.icon,
-    onIconChange = { onEditItemChange(item.copy(icon = it)) }
+    onIconChange = { onEditItemChange(item.copy(icon = it)) },
+    btnSlot = {
+        Row {
+            val shrinkBtns = Modifier.widthIn(20.dp)
+            TextButton(onClick = onEditDone, modifier = shrinkBtns) {
+                Text(
+                    text = "\uD83D\uDCBE",
+                    textAlign = TextAlign.End,
+                    modifier = Modifier.width(30.dp)
+                )
+            }
+
+            TextButton(onClick = onRemoveItem, modifier = shrinkBtns) {
+                Text(
+                    text = "❌",
+                    textAlign = TextAlign.End,
+                    modifier = Modifier.width(30.dp)
+                )
+            }
+        }
+    }
 )
 
 /**
