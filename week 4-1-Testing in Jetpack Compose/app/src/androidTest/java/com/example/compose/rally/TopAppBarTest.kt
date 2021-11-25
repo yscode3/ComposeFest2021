@@ -1,12 +1,15 @@
 package com.example.compose.rally
 
 import androidx.compose.material.Text
-import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onRoot
+import androidx.compose.ui.test.printToLog
+import androidx.compose.ui.text.toUpperCase
 import com.example.compose.rally.ui.components.RallyTopAppBar
 import org.junit.Rule
 import org.junit.Test
+import java.util.*
 
 class TopAppBarTest {
     @get:Rule
@@ -30,8 +33,14 @@ class TopAppBarTest {
             )
         }
 //        Thread.sleep(5000)
+//        composeTestRule
+//            .onNodeWithContentDescription(RallyScreen.Accounts.name)
+//            .assertIsSelected()
+
+//        composeTestRule.onRoot().printToLog("currentLabelExists")
+
         composeTestRule
             .onNodeWithContentDescription(RallyScreen.Accounts.name)
-            .assertIsSelected()
+            .assertExists()
     }
 }
